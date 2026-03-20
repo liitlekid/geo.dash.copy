@@ -31,6 +31,10 @@
         #face-pane { display: flex; gap: 15px; margin-bottom: 20px; }
         .face-opt { width: 40px; height: 40px; border: 1px solid #444; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #000; }
         .face-opt.active { border-color: var(--c); box-shadow: 0 0 10px var(--c); }
+
+        /* Progress Bar Style */
+        #bar-fill { height: 100%; width: 0%; background: var(--c); box-shadow: 0 0 15px var(--c); transition: 0.1s; }
+        .bar-wrap { position: absolute; top: 0; width: 100%; height: 6px; background: rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
@@ -45,12 +49,20 @@
         <div class="face-opt" onclick="Face.set(2, this)">😡</div>
         <div class="face-opt" onclick="Face.set(3, this)">🤖</div>
     </div>
-    <button class="btn" onclick="Nav.go('scr-lvl')">INITIALIZE_SYSTEM</button>
+    <button class="btn" onclick="Nav.go('scr-lvl')">CUBE_LEVELS</button>
+    <button class="btn" style="border-color:var(--c); color:var(--c);" onclick="Nav.go('scr-wave-lvl')">WAVE_LEVELS</button>
     <button class="btn" style="border-color:var(--m); color:var(--m);" onclick="Mod.toggle()">LEVEL_MOD_TOOLS</button>
 </div>
 
 <div id="scr-lvl" class="screen hidden">
+    <h2 style="color:var(--c)">CORE_LEVELS</h2>
     <div class="grid" id="lvl-grid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:15px;"></div>
+    <button class="btn" onclick="Nav.go('scr-main')">BACK</button>
+</div>
+
+<div id="scr-wave-lvl" class="screen hidden">
+    <h2 style="color:var(--m)">WAVE_CHALLENGES</h2>
+    <div class="grid" id="wave-grid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:15px;"></div>
     <button class="btn" onclick="Nav.go('scr-main')">BACK</button>
 </div>
 
@@ -178,100 +190,118 @@ class Obj {
 
 const Nav = {
     go(id) {
-        App.state = (id === 'scr-main' || id === 'scr-lvl') ? 'MENU' : App.state;
+        App.state = (id === 'scr-main' || id === 'scr-lvl' || id === 'scr-wave-lvl') ? 'MENU' : App.state;
         document.querySelectorAll('.screen, #hud').forEach(s => { s.classList.add('hidden'); s.style.display = 'none'; });
         let target = document.getElementById(id);
         target.style.display = (id === 'hud') ? 'block' : 'flex';
         setTimeout(() => target.classList.remove('hidden'), 50);
-        if(id === 'scr-lvl') this.build();
+        if(id === 'scr-lvl') this.build('lvl-grid', App.manifest);
+        if(id === 'scr-wave-lvl') this.build('wave-grid', WaveMode.manifest);
     },
-    build() {
-        const g = document.getElementById('lvl-grid'); g.innerHTML = '';
-        App.manifest.forEach((m, i) => {
+    build(gridId, manifest) {
+        const g = document.getElementById(gridId); g.innerHTML = '';
+        manifest.forEach((m, i) => {
             let c = document.createElement('div'); c.className = 'card';
             c.style = "width:120px; height:80px; border:1px solid #333; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;";
             c.innerHTML = `<span>${i+1}</span><div style="font-size:8px; color:#ff00ea">${m[1]}</div>`;
-            c.onclick = () => App.init(i); g.appendChild(c);
+            c.onclick = () => {
+                if(gridId === 'wave-grid') WaveMode.start(i);
+                else App.init(i);
+            };
+            g.appendChild(c);
         });
     }
 };
 // --- [END ORIGINAL CODE] ---
 
-/** INJECTION: MUSIC, MOD PANEL & BACKGROUND **/
+/** WAVE DIMENSION INJECTION LAYER **/
 
-const Mod = {
-    toggle() { let p = document.getElementById('mod-panel'); p.style.display = (p.style.display === 'block') ? 'none' : 'block'; },
-    getGrav() { return parseFloat(document.getElementById('mod-grav').value); },
-    getSpeed() { return parseFloat(document.getElementById('mod-speed').value); },
-    getHue() { return document.getElementById('mod-hue').value; }
-};
-
-const Face = {
-    active: 0,
-    list: [
-        (c) => { c.fillRect(-12,-8,8,8); c.fillRect(4,-8,8,8); c.fillRect(-10,8,20,4); },
-        (c) => { c.fillRect(-15,-10,30,8); c.fillRect(-5,5,10,10); },
-        (c) => { c.beginPath(); c.moveTo(-15,-10); c.lineTo(-5,-5); c.stroke(); c.moveTo(15,-10); c.lineTo(5,-5); c.stroke(); c.fillRect(-10,8,20,4); },
-        (c) => { c.strokeRect(-15,-10,30,20); c.fillRect(-5,-5,10,10); }
+const WaveMode = {
+    active: false,
+    manifest: [
+        ["WAVE_ZERO", "EASY", 600, 1], ["ZIG_ZAG", "NORMAL", 700, 1.2],
+        ["THIN_GAP", "HARD", 800, 1.5], ["SONIC_WAVE", "EXTREME", 1000, 2]
     ],
-    set(idx, el) {
-        this.active = idx;
-        document.querySelectorAll('.face-opt').forEach(x => x.classList.remove('active'));
-        el.classList.add('active');
+    start(idx) {
+        this.active = true;
+        // Temporarily swap manifest for init
+        let old = App.manifest; App.manifest = this.manifest;
+        App.init(idx);
+        App.manifest = old; // swap back
     }
 };
 
-const Music = {
-    osc: null, ctx: new (window.AudioContext || window.webkitAudioContext)(),
-    play() {
-        if(this.osc) this.stop();
-        this.osc = this.ctx.createOscillator();
-        let gain = this.ctx.createGain();
-        this.osc.type = 'sawtooth';
-        this.osc.frequency.setValueAtTime(110 + (App.activeLvl * 20), this.ctx.currentTime);
-        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
-        this.osc.connect(gain); gain.connect(this.ctx.destination);
-        this.osc.start();
-    },
-    stop() { if(this.osc) { this.osc.stop(); this.osc = null; } }
-};
-
-// Injection: Apply Modded Physics and Aesthetics
+// 1. WAVE PHYSICS INJECTION (OVERRIDE TICK)
+const originalTick = Player.prototype.tick;
 Player.prototype.tick = function(dt) {
-    let speedMult = Mod.getSpeed();
-    let gravVal = Mod.getGrav();
-    this.x += (this.speed * speedMult) * dt; 
-    this.vy += gravVal * dt;
-    if(this.onFloor && this.isJumping) this.vy = -1300;
-    this.y += this.vy * dt; 
-    if(this.y > App.h) App.die();
-    if(!this.onFloor) this.rot += 580 * dt * (Math.PI/180);
-    else { let t = Math.round(this.rot/(Math.PI/2))*(Math.PI/2); this.rot += (t-this.rot)*0.4; }
-    this.onFloor = false;
+    if(!WaveMode.active) {
+        // Original modded cube logic
+        let speedMult = Mod.getSpeed(); let gravVal = Mod.getGrav();
+        this.x += (this.speed * speedMult) * dt; this.vy += gravVal * dt;
+        if(this.onFloor && this.isJumping) this.vy = -1300;
+        this.y += this.vy * dt; if(this.y > App.h) App.die();
+        if(!this.onFloor) this.rot += 580 * dt * (Math.PI/180);
+        else { let t = Math.round(this.rot/(Math.PI/2))*(Math.PI/2); this.rot += (t-this.rot)*0.4; }
+        this.onFloor = false;
+    } else {
+        // Wave-only logic
+        this.x += (this.speed * Mod.getSpeed()) * dt;
+        this.vy = this.isJumping ? -1100 : 1100;
+        this.y += this.vy * dt;
+        this.rot = this.isJumping ? -Math.PI/4 : Math.PI/4;
+        if(this.y > App.floor || this.y < 0) App.die();
+    }
 };
 
+// 2. WAVE LEVEL BUILDER (OVERRIDE BUILD)
+const originalBuild = App.buildLevel;
+App.buildLevel = function(idx) {
+    originalBuild.call(this, idx);
+    if(WaveMode.active) {
+        // Wipe original blocks and build wave structures
+        this.entities = [];
+        // Top and Bottom ceilings
+        for(let i=0; i<2000; i+=60) {
+            this.entities.push(new Obj('block', i, 0));
+            this.entities.push(new Obj('block', i, App.floor));
+        }
+        // Wave Gaps
+        for(let i=1; i<20; i++) {
+            let x = i * 800;
+            let gapY = 200 + Math.random() * 300;
+            this.entities.push(new Obj('block', x, gapY - 200));
+            this.entities.push(new Obj('block', x, gapY + 200));
+        }
+    }
+};
+
+// 3. WAVE VISUALS (OVERRIDE DRAW)
 Player.prototype.draw = function(ctx) {
     ctx.save();
     ctx.filter = `hue-rotate(${Mod.getHue()}deg)`;
     ctx.translate(this.x+25, this.y+25);
     ctx.rotate(this.rot);
-    ctx.fillStyle='#00f2ff'; ctx.fillRect(-25,-25,50,50);
+    ctx.fillStyle='#00f2ff';
+    if(WaveMode.active) {
+        ctx.beginPath(); ctx.moveTo(25,0); ctx.lineTo(-20,-20); ctx.lineTo(-20,20); ctx.fill();
+    } else {
+        ctx.fillRect(-25,-25,50,50);
+    }
     ctx.fillStyle='#000'; ctx.strokeStyle='#000'; ctx.lineWidth=2;
     Face.list[Face.active](ctx);
     ctx.restore();
 };
 
-// Injection: Music Control
-const originalInit = App.init;
-App.init = function(idx) {
-    Music.play();
-    originalInit.call(this, idx);
+// 4. RESET ON MENU/DEATH
+const originalNavReset = Nav.go;
+Nav.go = function(id) {
+    if(id === 'scr-main') WaveMode.active = false;
+    originalNavReset.call(this, id);
 };
 
-const originalNav = Nav.go;
-Nav.go = function(id) {
-    if(id === 'scr-main') Music.stop();
-    originalNav.call(this, id);
+const originalDie = App.die;
+App.die = function() {
+    originalDie.call(this);
 };
 
 window.onload = () => Nav.go('scr-main');
