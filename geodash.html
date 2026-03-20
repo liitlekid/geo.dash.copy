@@ -2,54 +2,64 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>VeloCity: Singularity | Polished Edition</title>
+    <title>VeloCity: Singularity | Master Mod</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono&display=swap');
         :root { --c: #00f2ff; --m: #ff00ea; --y: #ffff00; --bg: #050508; --rd: #ff4444; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'Orbitron'; overflow: hidden; }
         canvas { display: block; }
         
-        /* --- POLISHED MENU OVERHAUL (CSS ONLY) --- */
-        .screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; background: radial-gradient(circle, #101015 0%, #050508 100%); transition: 0.8s; }
-        .hidden { opacity: 0; pointer-events: none; transform: scale(0.9); filter: blur(10px); }
+        /* --- NEW ANIMATED GRID BACKGROUND --- */
+        .bg-layer { position: absolute; inset: 0; z-index: -1; background: linear-gradient(to bottom, #0a0a12, #000); overflow: hidden; }
+        .grid-plane { position: absolute; width: 200%; height: 200%; top: -50%; left: -50%; background-image: linear-gradient(var(--c) 1px, transparent 1px), linear-gradient(90deg, var(--c) 1px, transparent 1px); background-size: 100px 100px; opacity: 0.05; transform: perspective(500px) rotateX(60deg); animation: gridScroll 10s linear infinite; }
+        @keyframes gridScroll { from { background-position: 0 0; } to { background-position: 0 100px; } }
+
+        /* --- UI OVERHAUL --- */
+        .screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; background: transparent; transition: 0.8s; }
+        .hidden { opacity: 0; pointer-events: none; transform: scale(0.9); }
+        h1 { font-size: 90px; font-weight: 900; letter-spacing: 15px; margin-bottom: 40px; background: linear-gradient(to bottom, #fff, var(--c)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 20px var(--c)); }
         
-        h1 { font-size: 90px; font-weight: 900; letter-spacing: 15px; margin-bottom: 40px; background: linear-gradient(to bottom, #fff 30%, var(--c)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 20px rgba(0,242,255,0.4)); animation: titleFloat 4s ease-in-out infinite; }
-        @keyframes titleFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .btn { background: rgba(0,242,255,0.1); border: 1px solid var(--c); color: var(--c); padding: 15px 50px; cursor: pointer; text-transform: uppercase; font-family: 'Orbitron'; font-size: 14px; letter-spacing: 2px; transition: 0.4s; margin: 10px; }
+        .btn:hover { background: var(--c); color: #000; box-shadow: 0 0 40px var(--c); }
 
-        .btn { background: rgba(0,242,255,0.05); border: 1px solid var(--c); color: var(--c); padding: 15px 50px; cursor: pointer; text-transform: uppercase; font-family: 'Orbitron'; font-size: 14px; letter-spacing: 2px; transition: 0.4s; position: relative; overflow: hidden; }
-        .btn:hover { background: var(--c); color: #000; box-shadow: 0 0 40px var(--c); transform: scale(1.05); }
+        /* --- LEVEL MOD PANEL --- */
+        #mod-panel { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.8); border: 1px solid var(--m); padding: 15px; width: 200px; font-family: 'JetBrains Mono'; font-size: 10px; z-index: 300; display: none; }
+        #mod-panel h3 { color: var(--m); margin: 0 0 10px 0; font-size: 12px; }
+        .mod-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        input[type="range"] { width: 80px; accent-color: var(--m); }
 
-        /* --- FACE SELECTOR UI --- */
-        #face-pane { display: flex; gap: 20px; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid #222; }
-        .face-opt { width: 50px; height: 50px; border: 2px solid #333; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: 0.3s; background: #000; }
-        .face-opt:hover { border-color: var(--c); }
-        .face-opt.active { border-color: var(--c); box-shadow: 0 0 15px var(--c); transform: scale(1.1); }
-
-        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-top: 30px; }
-        .card { width: 140px; height: 90px; background: #0a0a0f; border: 1px solid #222; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; border-radius: 4px; }
-        .card:hover { border-color: var(--m); background: #111; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(255,0,234,0.2); }
+        #face-pane { display: flex; gap: 15px; margin-bottom: 20px; }
+        .face-opt { width: 40px; height: 40px; border: 1px solid #444; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #000; }
+        .face-opt.active { border-color: var(--c); box-shadow: 0 0 10px var(--c); }
     </style>
 </head>
 <body>
 
+<div class="bg-layer"><div class="grid-plane"></div></div>
+
 <div id="scr-main" class="screen">
     <h1>SINGULARITY</h1>
-    
-    <div style="font-size: 10px; color: #666; margin-bottom: 10px; letter-spacing: 4px;">CHOOSE_NEURAL_INTERFACE</div>
     <div id="face-pane">
         <div class="face-opt active" onclick="Face.set(0, this)">🙂</div>
         <div class="face-opt" onclick="Face.set(1, this)">🕶️</div>
         <div class="face-opt" onclick="Face.set(2, this)">😡</div>
         <div class="face-opt" onclick="Face.set(3, this)">🤖</div>
     </div>
-
     <button class="btn" onclick="Nav.go('scr-lvl')">INITIALIZE_SYSTEM</button>
-    <button class="btn" style="border-color:#444; color:#444; margin-top:10px;" onclick="Architect.enable()">ARCHITECT_MODE</button>
+    <button class="btn" style="border-color:var(--m); color:var(--m);" onclick="Mod.toggle()">LEVEL_MOD_TOOLS</button>
 </div>
 
 <div id="scr-lvl" class="screen hidden">
-    <div class="grid" id="lvl-grid"></div>
-    <button class="btn" style="margin-top: 40px;" onclick="Nav.go('scr-main')">DISCONNECT</button>
+    <div class="grid" id="lvl-grid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:15px;"></div>
+    <button class="btn" onclick="Nav.go('scr-main')">BACK</button>
+</div>
+
+<div id="mod-panel">
+    <h3>MOD_OVERDRIVE</h3>
+    <div class="mod-row"><span>GRAVITY</span><input type="range" min="1000" max="8000" value="4500" id="mod-grav"></div>
+    <div class="mod-row"><span>SPEED</span><input type="range" min="0.5" max="3" step="0.1" value="1" id="mod-speed"></div>
+    <div class="mod-row"><span>HUE</span><input type="range" min="0" max="360" value="180" id="mod-hue"></div>
+    <button class="btn" style="font-size:8px; padding:5px;" onclick="Mod.toggle()">CLOSE</button>
 </div>
 
 <div id="hud">
@@ -58,10 +68,6 @@
         ID: <span id="st-lvl">1</span> | <span id="st-name" style="color:var(--m)">NULL</span><br>
         ATTEMPTS: <span id="st-att">1</span> | STARS: <span id="st-star">0</span>/3
     </div>
-</div>
-
-<div id="editor-panel" style="display:none; position:absolute; bottom:20px; left:50%; transform:translateX(-50%); z-index:200;">
-    <button class="btn" onclick="Nav.go('scr-main')">EXIT_EDITOR</button>
 </div>
 
 <canvas id="stage"></canvas>
@@ -183,28 +189,30 @@ const Nav = {
         const g = document.getElementById('lvl-grid'); g.innerHTML = '';
         App.manifest.forEach((m, i) => {
             let c = document.createElement('div'); c.className = 'card';
+            c.style = "width:120px; height:80px; border:1px solid #333; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;";
             c.innerHTML = `<span>${i+1}</span><div style="font-size:8px; color:#ff00ea">${m[1]}</div>`;
             c.onclick = () => App.init(i); g.appendChild(c);
         });
     }
 };
-
-const Architect = {
-    tool: 'spike',
-    enable() { App.init(0); App.state = 'EDIT'; document.getElementById('editor-panel').style.display = 'flex'; },
-    place(e) { let gx = Math.floor((e.clientX + App.lerpX)/60)*60; let gy = Math.floor(e.clientY/60)*60; App.entities.push(new Obj(this.tool, gx, gy)); }
-};
 // --- [END ORIGINAL CODE] ---
 
-/** INJECTION MODULE: COSMETICS, SLOWDOWN, AND PARTICLES **/
+/** INJECTION: MUSIC, MOD PANEL & BACKGROUND **/
+
+const Mod = {
+    toggle() { let p = document.getElementById('mod-panel'); p.style.display = (p.style.display === 'block') ? 'none' : 'block'; },
+    getGrav() { return parseFloat(document.getElementById('mod-grav').value); },
+    getSpeed() { return parseFloat(document.getElementById('mod-speed').value); },
+    getHue() { return document.getElementById('mod-hue').value; }
+};
 
 const Face = {
     active: 0,
     list: [
-        (c) => { c.fillRect(-12,-8,8,8); c.fillRect(4,-8,8,8); c.fillRect(-10,8,20,4); }, // Smiley
-        (c) => { c.fillRect(-15,-10,30,8); c.fillRect(-5,5,10,10); }, // Sunglasses
-        (c) => { c.beginPath(); c.moveTo(-15,-10); c.lineTo(-5,-5); c.stroke(); c.moveTo(15,-10); c.lineTo(5,-5); c.stroke(); c.fillRect(-10,8,20,4); }, // Angry
-        (c) => { c.strokeRect(-15,-10,30,20); c.fillRect(-5,-5,10,10); } // Robot
+        (c) => { c.fillRect(-12,-8,8,8); c.fillRect(4,-8,8,8); c.fillRect(-10,8,20,4); },
+        (c) => { c.fillRect(-15,-10,30,8); c.fillRect(-5,5,10,10); },
+        (c) => { c.beginPath(); c.moveTo(-15,-10); c.lineTo(-5,-5); c.stroke(); c.moveTo(15,-10); c.lineTo(5,-5); c.stroke(); c.fillRect(-10,8,20,4); },
+        (c) => { c.strokeRect(-15,-10,30,20); c.fillRect(-5,-5,10,10); }
     ],
     set(idx, el) {
         this.active = idx;
@@ -213,58 +221,57 @@ const Face = {
     }
 };
 
-const Particles = {
-    active: [],
-    spawn(x, y) {
-        for(let i=0; i<15; i++) {
-            this.active.push({ x, y, vx: (Math.random()-0.5)*20, vy: (Math.random()-0.5)*20, life: 1, color: '#00f2ff' });
-        }
+const Music = {
+    osc: null, ctx: new (window.AudioContext || window.webkitAudioContext)(),
+    play() {
+        if(this.osc) this.stop();
+        this.osc = this.ctx.createOscillator();
+        let gain = this.ctx.createGain();
+        this.osc.type = 'sawtooth';
+        this.osc.frequency.setValueAtTime(110 + (App.activeLvl * 20), this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+        this.osc.connect(gain); gain.connect(this.ctx.destination);
+        this.osc.start();
     },
-    update(ctx) {
-        this.active.forEach((p, i) => {
-            p.x += p.vx; p.y += p.vy; p.life -= 0.02;
-            ctx.fillStyle = p.color; ctx.globalAlpha = p.life;
-            ctx.fillRect(p.x, p.y, 5, 5);
-            if(p.life <= 0) this.active.splice(i, 1);
-        });
-        ctx.globalAlpha = 1;
-    }
+    stop() { if(this.osc) { this.osc.stop(); this.osc = null; } }
 };
 
-// Injection: Slow Down Physics (Speed multiplier 0.8)
-const originalTick = Player.prototype.tick;
+// Injection: Apply Modded Physics and Aesthetics
 Player.prototype.tick = function(dt) {
-    originalTick.call(this, dt * 0.85); 
+    let speedMult = Mod.getSpeed();
+    let gravVal = Mod.getGrav();
+    this.x += (this.speed * speedMult) * dt; 
+    this.vy += gravVal * dt;
+    if(this.onFloor && this.isJumping) this.vy = -1300;
+    this.y += this.vy * dt; 
+    if(this.y > App.h) App.die();
+    if(!this.onFloor) this.rot += 580 * dt * (Math.PI/180);
+    else { let t = Math.round(this.rot/(Math.PI/2))*(Math.PI/2); this.rot += (t-this.rot)*0.4; }
+    this.onFloor = false;
 };
 
-// Injection: Faces and Particles to Draw
-const originalDrawPlayer = Player.prototype.draw;
 Player.prototype.draw = function(ctx) {
     ctx.save();
+    ctx.filter = `hue-rotate(${Mod.getHue()}deg)`;
     ctx.translate(this.x+25, this.y+25);
     ctx.rotate(this.rot);
-    ctx.shadowBlur=15; ctx.shadowColor='#00f2ff';
     ctx.fillStyle='#00f2ff'; ctx.fillRect(-25,-25,50,50);
-    ctx.shadowBlur=0; ctx.fillStyle='#000'; ctx.strokeStyle='#000'; ctx.lineWidth=2;
+    ctx.fillStyle='#000'; ctx.strokeStyle='#000'; ctx.lineWidth=2;
     Face.list[Face.active](ctx);
     ctx.restore();
 };
 
-// Injection: Death Particles
-const originalDie = App.die;
-App.die = function() {
-    Particles.spawn(this.player.x + 25, this.player.y + 25);
-    originalDie.call(this);
+// Injection: Music Control
+const originalInit = App.init;
+App.init = function(idx) {
+    Music.play();
+    originalInit.call(this, idx);
 };
 
-// Hook into App.draw for the particles
-const originalDrawAll = App.draw;
-App.draw = function() {
-    originalDrawAll.call(this);
-    this.ctx.save();
-    this.ctx.translate(-this.lerpX, 0);
-    Particles.update(this.ctx);
-    this.ctx.restore();
+const originalNav = Nav.go;
+Nav.go = function(id) {
+    if(id === 'scr-main') Music.stop();
+    originalNav.call(this, id);
 };
 
 window.onload = () => Nav.go('scr-main');
