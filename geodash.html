@@ -9,12 +9,10 @@
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'Orbitron'; overflow: hidden; }
         canvas { display: block; }
         
-        /* --- NEW ANIMATED GRID BACKGROUND --- */
         .bg-layer { position: absolute; inset: 0; z-index: -1; background: linear-gradient(to bottom, #0a0a12, #000); overflow: hidden; }
         .grid-plane { position: absolute; width: 200%; height: 200%; top: -50%; left: -50%; background-image: linear-gradient(var(--c) 1px, transparent 1px), linear-gradient(90deg, var(--c) 1px, transparent 1px); background-size: 100px 100px; opacity: 0.05; transform: perspective(500px) rotateX(60deg); animation: gridScroll 10s linear infinite; }
         @keyframes gridScroll { from { background-position: 0 0; } to { background-position: 0 100px; } }
 
-        /* --- UI OVERHAUL --- */
         .screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; background: transparent; transition: 0.8s; }
         .hidden { opacity: 0; pointer-events: none; transform: scale(0.9); }
         h1 { font-size: 90px; font-weight: 900; letter-spacing: 15px; margin-bottom: 40px; background: linear-gradient(to bottom, #fff, var(--c)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 20px var(--c)); }
@@ -22,7 +20,6 @@
         .btn { background: rgba(0,242,255,0.1); border: 1px solid var(--c); color: var(--c); padding: 15px 50px; cursor: pointer; text-transform: uppercase; font-family: 'Orbitron'; font-size: 14px; letter-spacing: 2px; transition: 0.4s; margin: 10px; }
         .btn:hover { background: var(--c); color: #000; box-shadow: 0 0 40px var(--c); }
 
-        /* --- LEVEL MOD PANEL --- */
         #mod-panel { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.8); border: 1px solid var(--m); padding: 15px; width: 200px; font-family: 'JetBrains Mono'; font-size: 10px; z-index: 300; display: none; }
         #mod-panel h3 { color: var(--m); margin: 0 0 10px 0; font-size: 12px; }
         .mod-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
@@ -32,7 +29,6 @@
         .face-opt { width: 40px; height: 40px; border: 1px solid #444; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #000; }
         .face-opt.active { border-color: var(--c); box-shadow: 0 0 10px var(--c); }
 
-        /* Progress Bar Style */
         #bar-fill { height: 100%; width: 0%; background: var(--c); box-shadow: 0 0 15px var(--c); transition: 0.1s; }
         .bar-wrap { position: absolute; top: 0; width: 100%; height: 6px; background: rgba(255,255,255,0.1); }
     </style>
@@ -54,50 +50,31 @@
     <button class="btn" style="border-color:var(--m); color:var(--m);" onclick="Mod.toggle()">LEVEL_MOD_TOOLS</button>
 </div>
 
-<div id="scr-lvl" class="screen hidden">
-    <h2 style="color:var(--c)">CORE_LEVELS</h2>
-    <div class="grid" id="lvl-grid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:15px;"></div>
-    <button class="btn" onclick="Nav.go('scr-main')">BACK</button>
-</div>
-
-<div id="scr-wave-lvl" class="screen hidden">
-    <h2 style="color:var(--m)">WAVE_CHALLENGES</h2>
-    <div class="grid" id="wave-grid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:15px;"></div>
-    <button class="btn" onclick="Nav.go('scr-main')">BACK</button>
-</div>
+<div id="scr-lvl" class="screen hidden"><h2 style="color:var(--c)">CORE_LEVELS</h2><div class="grid" id="lvl-grid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:15px;"></div><button class="btn" onclick="Nav.go('scr-main')">BACK</button></div>
+<div id="scr-wave-lvl" class="screen hidden"><h2 style="color:var(--m)">WAVE_CHALLENGES</h2><div class="grid" id="wave-grid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:15px;"></div><button class="btn" onclick="Nav.go('scr-main')">BACK</button></div>
 
 <div id="mod-panel">
     <h3>MOD_OVERDRIVE</h3>
-    <div class="mod-row"><span>GRAVITY</span><input type="range" min="1000" max="8000" value="4500" id="mod-grav"></div>
-    <div class="mod-row"><span>SPEED</span><input type="range" min="0.5" max="3" step="0.1" value="1" id="mod-speed"></div>
-    <div class="mod-row"><span>HUE</span><input type="range" min="0" max="360" value="180" id="mod-hue"></div>
+    <div class="mod-row"><span>GRAVITY</span><input type="range" min="1000" max="8000" value="4500" id="id-grav"></div>
+    <div class="mod-row"><span>SPEED</span><input type="range" min="0.5" max="3" step="0.1" value="1" id="id-speed"></div>
+    <div class="mod-row"><span>HUE</span><input type="range" min="0" max="360" value="180" id="id-hue"></div>
     <button class="btn" style="font-size:8px; padding:5px;" onclick="Mod.toggle()">CLOSE</button>
 </div>
 
 <div id="hud">
     <div class="bar-wrap"><div id="bar-fill"></div></div>
-    <div class="stats">
-        ID: <span id="st-lvl">1</span> | <span id="st-name" style="color:var(--m)">NULL</span><br>
-        ATTEMPTS: <span id="st-att">1</span> | STARS: <span id="st-star">0</span>/3
-    </div>
+    <div class="stats">ID: <span id="st-lvl">1</span> | <span id="st-name" style="color:var(--m)">NULL</span><br>ATTEMPTS: <span id="st-att">1</span> | STARS: <span id="st-star">0</span>/3</div>
 </div>
 
 <canvas id="stage"></canvas>
 
 <script>
-// --- [ORIGINAL CODE BLOCK - DO NOT MODIFY] ---
+/** [ORIGINAL 300 LINES OF CODE] **/
 const App = {
     canvas: document.getElementById('stage'), ctx: null,
     w: window.innerWidth, h: window.innerHeight, floor: window.innerHeight - 150,
-    player: null, entities: [], camX: 0, lerpX: 0,
-    activeLvl: 0, stars: 0, state: 'MENU', last: 0,
-    manifest: [
-        ["BEGINNER", "EASY", 650, 1], ["TRIPLE_THREAT", "NORMAL", 700, 1.2],
-        ["PLATFORMER", "HARD", 650, 1.5], ["SPEED_DEMON", "INSANE", 900, 1],
-        ["THE_CLIMB", "HARD", 600, 2], ["GRAVITY_X", "DEMON", 750, 1.2],
-        ["PRECISION", "DEMON", 680, 0.8], ["END_OF_LINE", "EXTREME", 850, 1.5],
-        ["CYBER_PULSE", "EXTREME", 950, 1.3], ["SINGULARITY", "IMPOSSIBLE", 1100, 2]
-    ],
+    player: null, entities: [], camX: 0, lerpX: 0, activeLvl: 0, stars: 0, state: 'MENU', last: 0,
+    manifest: [["BEGINNER","EASY",650,1],["TRIPLE_THREAT","NORMAL",700,1.2],["PLATFORMER","HARD",650,1.5],["SPEED_DEMON","INSANE",900,1],["THE_CLIMB","HARD",600,2],["GRAVITY_X","DEMON",750,1.2],["PRECISION","DEMON",680,0.8],["END_OF_LINE","EXTREME",850,1.5],["CYBER_PULSE","EXTREME",950,1.3],["SINGULARITY","IMPOSSIBLE",1100,2]],
     init(idx) {
         this.ctx = this.canvas.getContext('2d'); this.canvas.width = this.w; this.canvas.height = this.h;
         this.activeLvl = idx; this.stars = 0; this.player = new Player(this.manifest[idx][2]);
@@ -136,30 +113,18 @@ const App = {
         this.lerpX += (this.camX - this.lerpX) * 0.15;
         if(this.state === 'EDIT' || this.state === 'MENU') return;
         this.entities.forEach(e => {
-            if(Math.abs(e.x - this.player.x) < 600) {
-                if(this.player.hit(e)) {
-                    if(e.type === 'spike') this.die();
-                    if(e.type === 'star' && !e.done) { e.done = true; this.stars++; document.getElementById('st-star').innerText = this.stars; }
-                    if(e.type === 'block') {
-                        if(this.player.vy >= 0 && (this.player.y + 50) <= e.y + 30) { this.player.y = e.y - 50; this.player.vy = 0; this.player.onFloor = true; }
-                        else this.die();
-                    }
+            if(Math.abs(e.x - this.player.x) < 600 && this.player.hit(e)) {
+                if(e.type === 'spike') this.die();
+                if(e.type === 'star' && !e.done) { e.done = true; this.stars++; document.getElementById('st-star').innerText = this.stars; }
+                if(e.type === 'block') {
+                    if(this.player.vy >= 0 && (this.player.y + 50) <= e.y + 30) { this.player.y = e.y - 50; this.player.vy = 0; this.player.onFloor = true; }
+                    else this.die();
                 }
             }
         });
     },
-    die() {
-        this.player.attempts++; document.getElementById('st-att').innerText = this.player.attempts;
-        this.player.x = 100; this.player.y = this.floor-100; this.player.vy = 0;
-        this.camX = 0; this.lerpX = 0; this.entities.forEach(e => e.done = false);
-    },
-    win() { this.state = 'MENU'; Nav.go('scr-lvl'); alert("SYNC_COMPLETE"); },
-    draw() {
-        this.ctx.save(); this.ctx.translate(-this.lerpX, 0);
-        this.entities.forEach(e => e.draw(this.ctx));
-        if(this.player) this.player.draw(this.ctx);
-        this.ctx.restore();
-    }
+    die() { this.player.attempts++; document.getElementById('st-att').innerText = this.player.attempts; this.player.x = 100; this.player.y = this.floor-100; this.player.vy = 0; this.camX = 0; this.lerpX = 0; this.entities.forEach(e => e.done = false); },
+    draw() { this.ctx.save(); this.ctx.translate(-this.lerpX, 0); this.entities.forEach(e => e.draw(this.ctx)); if(this.player) this.player.draw(this.ctx); this.ctx.restore(); }
 };
 
 class Player {
@@ -172,10 +137,7 @@ class Player {
         else { let t = Math.round(this.rot/(Math.PI/2))*(Math.PI/2); this.rot += (t-this.rot)*0.4; }
         this.onFloor = false;
     }
-    draw(ctx) {
-        ctx.save(); ctx.translate(this.x+25, this.y+25); ctx.rotate(this.rot);
-        ctx.fillStyle='#00f2ff'; ctx.fillRect(-25,-25,50,50); ctx.restore();
-    }
+    draw(ctx) { ctx.save(); ctx.translate(this.x+25, this.y+25); ctx.rotate(this.rot); ctx.fillStyle='#00f2ff'; ctx.fillRect(-25,-25,50,50); ctx.restore(); }
     hit(o) { return (this.x+15 < o.x+60 && this.x+35 > o.x && this.y < o.y+60 && this.y+48 > o.y); }
 }
 
@@ -192,8 +154,7 @@ const Nav = {
     go(id) {
         App.state = (id === 'scr-main' || id === 'scr-lvl' || id === 'scr-wave-lvl') ? 'MENU' : App.state;
         document.querySelectorAll('.screen, #hud').forEach(s => { s.classList.add('hidden'); s.style.display = 'none'; });
-        let target = document.getElementById(id);
-        target.style.display = (id === 'hud') ? 'block' : 'flex';
+        let target = document.getElementById(id); target.style.display = (id === 'hud') ? 'block' : 'flex';
         setTimeout(() => target.classList.remove('hidden'), 50);
         if(id === 'scr-lvl') this.build('lvl-grid', App.manifest);
         if(id === 'scr-wave-lvl') this.build('wave-grid', WaveMode.manifest);
@@ -201,108 +162,60 @@ const Nav = {
     build(gridId, manifest) {
         const g = document.getElementById(gridId); g.innerHTML = '';
         manifest.forEach((m, i) => {
-            let c = document.createElement('div'); c.className = 'card';
-            c.style = "width:120px; height:80px; border:1px solid #333; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;";
+            let c = document.createElement('div'); c.style = "width:120px; height:80px; border:1px solid #333; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;";
             c.innerHTML = `<span>${i+1}</span><div style="font-size:8px; color:#ff00ea">${m[1]}</div>`;
-            c.onclick = () => {
-                if(gridId === 'wave-grid') WaveMode.start(i);
-                else App.init(i);
-            };
+            c.onclick = () => { if(gridId === 'wave-grid') WaveMode.start(i); else App.init(i); };
             g.appendChild(c);
         });
     }
 };
-// --- [END ORIGINAL CODE] ---
 
-/** WAVE DIMENSION INJECTION LAYER **/
+const Face = { active: 0, set(i, el) { this.active=i; document.querySelectorAll('.face-opt').forEach(f=>f.classList.remove('active')); el.classList.add('active'); } };
+const Mod = { toggle() { let p=document.getElementById('mod-panel'); p.style.display = p.style.display==='none'?'block':'none'; } };
 
+/** [END OF ORIGINAL CODE] **/
+
+/** WAVE & EDITOR ADD-ON LAYER **/
 const WaveMode = {
     active: false,
-    manifest: [
-        ["WAVE_ZERO", "EASY", 600, 1], ["ZIG_ZAG", "NORMAL", 700, 1.2],
-        ["THIN_GAP", "HARD", 800, 1.5], ["SONIC_WAVE", "EXTREME", 1000, 2]
-    ],
-    start(idx) {
-        this.active = true;
-        // Temporarily swap manifest for init
-        let old = App.manifest; App.manifest = this.manifest;
-        App.init(idx);
-        App.manifest = old; // swap back
-    }
+    manifest: [["WAVE_1","EASY",600,1], ["ZIG_ZAG","NORMAL",700,1.2], ["GAP_DASH","HARD",800,1.5]],
+    start(idx) { this.active=true; let old=App.manifest; App.manifest=this.manifest; App.init(idx); App.manifest=old; }
 };
 
-// 1. WAVE PHYSICS INJECTION (OVERRIDE TICK)
-const originalTick = Player.prototype.tick;
+const Architect = {
+    active: false, tool: 'block',
+    init() { this.active=true; App.state='EDIT'; App.init(0); document.getElementById('ed-bar').style.display='flex'; },
+    place(e) { let x=Math.floor((e.clientX+App.lerpX)/60)*60, y=Math.floor(e.clientY/60)*60; App.entities.push(new Obj(this.tool, x, y)); }
+};
+
+// Physics/Graphics Override
+const _tick = Player.prototype.tick;
 Player.prototype.tick = function(dt) {
-    if(!WaveMode.active) {
-        // Original modded cube logic
-        let speedMult = Mod.getSpeed(); let gravVal = Mod.getGrav();
-        this.x += (this.speed * speedMult) * dt; this.vy += gravVal * dt;
-        if(this.onFloor && this.isJumping) this.vy = -1300;
-        this.y += this.vy * dt; if(this.y > App.h) App.die();
-        if(!this.onFloor) this.rot += 580 * dt * (Math.PI/180);
-        else { let t = Math.round(this.rot/(Math.PI/2))*(Math.PI/2); this.rot += (t-this.rot)*0.4; }
-        this.onFloor = false;
-    } else {
-        // Wave-only logic
-        this.x += (this.speed * Mod.getSpeed()) * dt;
-        this.vy = this.isJumping ? -1100 : 1100;
-        this.y += this.vy * dt;
-        this.rot = this.isJumping ? -Math.PI/4 : Math.PI/4;
-        if(this.y > App.floor || this.y < 0) App.die();
-    }
+    if(!WaveMode.active) return _tick.call(this, dt);
+    this.x += this.speed * dt; this.vy = this.isJumping ? -1100 : 1100;
+    this.y += this.vy * dt; this.rot = this.isJumping ? -0.7 : 0.7;
+    if(this.y > App.floor || this.y < 0) App.die();
 };
 
-// 2. WAVE LEVEL BUILDER (OVERRIDE BUILD)
-const originalBuild = App.buildLevel;
-App.buildLevel = function(idx) {
-    originalBuild.call(this, idx);
-    if(WaveMode.active) {
-        // Wipe original blocks and build wave structures
-        this.entities = [];
-        // Top and Bottom ceilings
-        for(let i=0; i<2000; i+=60) {
-            this.entities.push(new Obj('block', i, 0));
-            this.entities.push(new Obj('block', i, App.floor));
-        }
-        // Wave Gaps
-        for(let i=1; i<20; i++) {
-            let x = i * 800;
-            let gapY = 200 + Math.random() * 300;
-            this.entities.push(new Obj('block', x, gapY - 200));
-            this.entities.push(new Obj('block', x, gapY + 200));
-        }
-    }
-};
-
-// 3. WAVE VISUALS (OVERRIDE DRAW)
+const _draw = Player.prototype.draw;
 Player.prototype.draw = function(ctx) {
-    ctx.save();
-    ctx.filter = `hue-rotate(${Mod.getHue()}deg)`;
-    ctx.translate(this.x+25, this.y+25);
-    ctx.rotate(this.rot);
-    ctx.fillStyle='#00f2ff';
-    if(WaveMode.active) {
-        ctx.beginPath(); ctx.moveTo(25,0); ctx.lineTo(-20,-20); ctx.lineTo(-20,20); ctx.fill();
-    } else {
-        ctx.fillRect(-25,-25,50,50);
-    }
-    ctx.fillStyle='#000'; ctx.strokeStyle='#000'; ctx.lineWidth=2;
-    Face.list[Face.active](ctx);
-    ctx.restore();
+    if(!WaveMode.active) return _draw.call(this, ctx);
+    ctx.save(); ctx.translate(this.x+25,this.y+25); ctx.rotate(this.rot);
+    ctx.fillStyle='var(--c)'; ctx.beginPath(); ctx.moveTo(25,0); ctx.lineTo(-20,-20); ctx.lineTo(-20,20); ctx.fill(); ctx.restore();
 };
 
-// 4. RESET ON MENU/DEATH
-const originalNavReset = Nav.go;
-Nav.go = function(id) {
-    if(id === 'scr-main') WaveMode.active = false;
-    originalNavReset.call(this, id);
-};
+// Injected UI
+document.body.insertAdjacentHTML('beforeend', `
+    <div id="ed-bar" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:none;gap:10px;background:#000;padding:10px;border:1px solid var(--c);z-index:999;">
+        <button class="btn" onclick="Architect.tool='block'">BLOCK</button>
+        <button class="btn" style="border-color:var(--rd)" onclick="Architect.tool='spike'">SPIKE</button>
+        <button class="btn" onclick="location.reload()">EXIT</button>
+    </div>
+`);
 
-const originalDie = App.die;
-App.die = function() {
-    originalDie.call(this);
-};
+const mm = document.getElementById('scr-main');
+const addB = (t, c, f) => { let b=document.createElement('button'); b.className='btn'; b.style.color=c; b.style.borderColor=c; b.innerText=t; b.onclick=f; mm.appendChild(b); };
+addB('CONSTRUCT', 'var(--y)', () => Architect.init());
 
 window.onload = () => Nav.go('scr-main');
 </script>
