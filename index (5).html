@@ -1,0 +1,250 @@
+
+
+NEw code maybe fav
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>VeloCity: Singularity | 10 Unique Levels</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono&display=swap');
+        :root { --c: #00f2ff; --m: #ff00ea; --y: #ffff00; --bg: #050508; --rd: #ff4444; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'Orbitron'; overflow: hidden; }
+        canvas { display: block; }
+
+        /* --- UI NAVIGATION --- */
+        .screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; background: var(--bg); transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .hidden { opacity: 0; pointer-events: none; transform: scale(1.1) rotate(2deg); }
+        
+        h1 { font-size: 80px; font-weight: 900; letter-spacing: 20px; margin: 0; background: linear-gradient(45deg, #fff, var(--c)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 30px var(--c)); }
+        .grid { display: grid; grid-template-columns: repeat(5, 2fr); gap: 15px; margin: 40px; }
+        
+        .card { 
+            width: 140px; height: 100px; background: rgba(255,255,255,0.02); border: 1px solid #333; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;
+        }
+        .card:hover { border-color: var(--c); background: rgba(0,242,255,0.05); transform: translateY(-5px); }
+        .card.locked { opacity: 0.2; pointer-events: none; }
+        .card .diff { font-family: 'JetBrains Mono'; font-size: 9px; margin-top: 8px; color: var(--m); }
+
+        .btn { 
+            background: none; border: 2px solid var(--c); color: var(--c); padding: 15px 50px; 
+            cursor: pointer; text-transform: uppercase; font-weight: 900; letter-spacing: 4px;
+            margin: 10px; transition: 0.3s;
+        }
+        .btn:hover { background: var(--c); color: #000; box-shadow: 0 0 50px var(--c); }
+
+        /* --- GAME HUD --- */
+        #hud { position: absolute; inset: 0; pointer-events: none; display: none; }
+        .bar-wrap { position: absolute; top: 0; width: 100%; height: 10px; background: rgba(255,255,255,0.03); }
+        #bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--c), var(--m)); box-shadow: 0 0 20px var(--c); }
+        .stats { position: absolute; top: 30px; left: 30px; background: rgba(0,0,0,0.9); padding: 15px; border-left: 4px solid var(--c); font-family: 'JetBrains Mono'; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div id="scr-main" class="screen">
+    <div style="font-size: 12px; color: var(--m); letter-spacing: 5px; margin-bottom: 10px;">NEURAL_LINK_ESTABLISHED</div>
+    <h1>SINGULARITY</h1>
+    <button class="btn" onclick="Nav.go('scr-lvl')">INITIALIZE</button>
+    <div style="margin-top: 50px; color: #333; font-size: 10px; text-align: center;">
+        [SOCIAL_FEED]<br>
+        user_x99 uploaded "THE_VOID" (Level 11)<br>
+        master_gd just 3-starred "TITAN_FALL"
+    </div>
+</div>
+
+<div id="scr-lvl" class="screen hidden">
+    <h2>SELECT_SEQUENCE</h2>
+    <div class="grid" id="lvl-grid"></div>
+    <button class="btn" style="font-size: 10px; border-color: #444; color: #444;" onclick="Nav.go('scr-main')">BACK</button>
+</div>
+
+<div id="hud">
+    <div class="bar-wrap"><div id="bar-fill"></div></div>
+    <div class="stats">
+        ID: <span id="st-lvl">1</span> | <span id="st-name" style="color:var(--m)">NULL</span><br>
+        ATTEMPTS: <span id="st-att">1</span><br>
+        STARS: <span id="st-star" style="color:var(--y)">0</span>/3
+    </div>
+</div>
+
+<canvas id="stage"></canvas>
+
+<script>
+const App = {
+    canvas: document.getElementById('stage'), ctx: null,
+    w: window.innerWidth, h: window.innerHeight, floor: window.innerHeight - 150,
+    player: null, entities: [], camX: 0, lerpX: 0,
+    activeLvl: 0, stars: 0, state: 'MENU', last: 0,
+    
+    // Level Metadata: [Name, Difficulty, Speed, MapScale]
+    manifest: [
+        ["BEGINNER", "EASY", 650, 1],
+        ["TRIPLE_THREAT", "NORMAL", 700, 1.2],
+        ["PLATFORMER", "HARD", 650, 1.5],
+        ["SPEED_DEMON", "INSANE", 900, 1],
+        ["THE_CLIMB", "HARD", 600, 2],
+        ["GRAVITY_X", "DEMON", 750, 1.2],
+        ["PRECISION", "DEMON", 680, 0.8],
+        ["END_OF_LINE", "EXTREME", 850, 1.5],
+        ["CYBER_PULSE", "EXTREME", 950, 1.3],
+        ["SINGULARITY", "IMPOSSIBLE", 1100, 2]
+    ],
+
+    init(idx) {
+        this.ctx = this.canvas.getContext('2d');
+        this.canvas.width = this.w; this.canvas.height = this.h;
+        this.activeLvl = idx; this.stars = 0;
+        this.player = new Player(this.manifest[idx][2]);
+        this.buildLevel(idx);
+        this.bind();
+        this.state = 'PLAY';
+        Nav.go('hud');
+        document.getElementById('st-name').innerText = this.manifest[idx][0];
+        requestAnimationFrame((t) => this.loop(t));
+    },
+
+    bind() {
+        const input = (v) => { if(this.player) this.player.isJumping = v; };
+        window.onkeydown = (e) => { if(e.code === 'Space') input(true); };
+        window.onkeyup = (e) => { if(e.code === 'Space') input(false); };
+        this.canvas.onmousedown = () => input(true);
+        window.onmouseup = () => input(false);
+    },
+
+    buildLevel(idx) {
+        this.entities = [];
+        const m = this.manifest[idx];
+        const spacing = 800 * m[3];
+        
+        // Permanent Floor
+        for(let i=0; i<1500; i++) this.entities.push(new Obj('block', i*60, this.floor));
+
+        // Unique Level Architect
+        for(let i=1; i<30; i++) {
+            let x = i * spacing;
+            
+            if(idx === 1) { // Triple Threat (3 spikes in a row)
+                this.entities.push(new Obj('spike', x, this.floor-60));
+                this.entities.push(new Obj('spike', x+60, this.floor-60));
+                this.entities.push(new Obj('spike', x+120, this.floor-60));
+            } else if(idx === 2) { // Platformer (High blocks)
+                this.entities.push(new Obj('block', x, this.floor-120));
+                this.entities.push(new Obj('block', x+60, this.floor-120));
+                this.entities.push(new Obj('star', x+30, this.floor-180));
+            } else if(idx === 4) { // The Climb (Stairs)
+                for(let s=0; s<4; s++) this.entities.push(new Obj('block', x + (s*60), this.floor - (s+1)*60));
+            } else {
+                this.entities.push(new Obj('spike', x, this.floor-60));
+            }
+            
+            if(i % 5 === 0) this.entities.push(new Obj('star', x + 300, this.floor - 150));
+        }
+        document.getElementById('st-lvl').innerText = idx + 1;
+    },
+
+    loop(t) {
+        let dt = Math.min((t - this.last) / 1000, 0.016);
+        this.last = t;
+        this.ctx.fillStyle = '#050508'; this.ctx.fillRect(0,0,this.w,this.h);
+        if(this.state === 'PLAY') this.update(dt);
+        this.draw();
+        requestAnimationFrame((t) => this.loop(t));
+    },
+
+    update(dt) {
+        this.player.tick(dt);
+        this.camX = this.player.x - 450;
+        this.lerpX += (this.camX - this.lerpX) * 0.15;
+
+        let p = Math.floor((this.player.x / 40000) * 100);
+        document.getElementById('bar-fill').style.width = p + "%";
+
+        this.entities.forEach(e => {
+            if(Math.abs(e.x - this.player.x) < 600) {
+                if(this.player.hit(e)) {
+                    if(e.type === 'spike') this.die();
+                    if(e.type === 'star' && !e.done) { e.done = true; this.stars++; document.getElementById('st-star').innerText = this.stars; }
+                    if(e.type === 'block') {
+                        // Precise Landing Logic
+                        if(this.player.vy >= 0 && (this.player.y + 50) <= e.y + 30) {
+                            this.player.y = e.y - 50; this.player.vy = 0; this.player.onFloor = true;
+                        } else this.die();
+                    }
+                }
+            }
+        });
+        if(p >= 105) this.win();
+    },
+
+    die() {
+        this.player.attempts++; document.getElementById('st-att').innerText = this.player.attempts;
+        this.player.x = 100; this.player.y = this.floor-100; this.player.vy = 0;
+        this.camX = 0; this.lerpX = 0; this.stars = 0; document.getElementById('st-star').innerText = 0;
+        this.entities.forEach(e => e.done = false);
+    },
+
+    win() { this.state = 'MENU'; Nav.go('scr-lvl'); alert("SEQUENCE_SYNC_COMPLETE"); },
+
+    draw() {
+        this.ctx.save(); this.ctx.translate(-this.lerpX, 0);
+        this.entities.forEach(e => e.draw(this.ctx));
+        if(this.player) this.player.draw(this.ctx);
+        this.ctx.restore();
+    }
+};
+
+class Player {
+    constructor(speed) { this.x=100; this.y=0; this.vy=0; this.attempts=1; this.onFloor=false; this.isJumping=false; this.rot=0; this.speed=speed; }
+    tick(dt) {
+        this.x += this.speed * dt;
+        this.vy += 4500 * dt;
+        if(this.onFloor && this.isJumping) this.vy = -1300;
+        this.y += this.vy * dt;
+        if(this.y > App.h) App.die();
+        if(!this.onFloor) this.rot += 580 * dt * (Math.PI/180);
+        else { let t = Math.round(this.rot/(Math.PI/2))*(Math.PI/2); this.rot += (t-this.rot)*0.4; }
+        this.onFloor = false;
+    }
+    draw(ctx) {
+        ctx.save(); ctx.translate(this.x+25, this.y+25); ctx.rotate(this.rot);
+        ctx.shadowBlur=30; ctx.shadowColor='#00f2ff'; ctx.fillStyle='#00f2ff'; ctx.fillRect(-25,-25,50,50);
+        ctx.strokeStyle='#fff'; ctx.lineWidth=3; ctx.strokeRect(-18,-18,36,36); ctx.restore();
+    }
+    hit(o) { return (this.x+15 < o.x+60 && this.x+35 > o.x && this.y < o.y+60 && this.y+48 > o.y); }
+}
+
+class Obj {
+    constructor(t, x, y) { this.type=t; this.x=x; this.y=y; this.done=false; }
+    draw(ctx) {
+        if(this.done && this.type === 'star') return;
+        if(this.type==='block'){ ctx.fillStyle='#0a0a0f'; ctx.strokeStyle='#00f2ff'; ctx.fillRect(this.x,this.y,60,60); ctx.strokeRect(this.x,this.y,60,60); }
+        else if(this.type==='star'){ ctx.fillStyle='#ffff00'; ctx.beginPath(); for(let i=0;i<5;i++){ ctx.lineTo(this.x+30+18*Math.cos((18+i*72)*Math.PI/180),this.y+30-18*Math.sin((18+i*72)*Math.PI/180)); ctx.lineTo(this.x+30+8*Math.cos((54+i*72)*Math.PI/180),this.y+30-8*Math.sin((54+i*72)*Math.PI/180)); } ctx.closePath(); ctx.fill(); }
+        else { ctx.fillStyle='#ff0044'; ctx.beginPath(); ctx.moveTo(this.x,this.y+60); ctx.lineTo(this.x+30,this.y+10); ctx.lineTo(this.x+60,this.y+60); ctx.fill(); }
+    }
+}
+
+const Nav = {
+    go(id) {
+        document.querySelectorAll('.screen, #hud').forEach(s => { s.classList.add('hidden'); s.style.display = 'none'; });
+        let target = document.getElementById(id);
+        target.style.display = (id === 'hud') ? 'block' : 'flex';
+        setTimeout(() => target.classList.remove('hidden'), 50);
+        if(id === 'scr-lvl') this.build();
+    },
+    build() {
+        const g = document.getElementById('lvl-grid'); g.innerHTML = '';
+        App.manifest.forEach((m, i) => {
+            let c = document.createElement('div'); c.className = 'card';
+            c.innerHTML = `<span>${i+1}</span><div class="diff">${m[1]}</div>`;
+            c.onclick = () => App.init(i); g.appendChild(c);
+        });
+    }
+};
+
+Nav.go('scr-main');
+</script>
+</body>
+</html>
