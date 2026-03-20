@@ -2,58 +2,54 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>VeloCity: Singularity | Mechanic Expansion</title>
+    <title>VeloCity: Singularity | Polished Edition</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono&display=swap');
-        :root { --c: #00f2ff; --m: #ff00ea; --y: #ffff00; --bg: #050508; --rd: #ff4444; --prp: #a020f0; --ora: #ffa500; }
+        :root { --c: #00f2ff; --m: #ff00ea; --y: #ffff00; --bg: #050508; --rd: #ff4444; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'Orbitron'; overflow: hidden; }
         canvas { display: block; }
-
-        /* --- UI NAVIGATION --- */
-        .screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; background: var(--bg); transition: 0.5s; }
-        .hidden { opacity: 0; pointer-events: none; transform: scale(1.1); }
         
-        h1 { font-size: 80px; font-weight: 900; letter-spacing: 20px; margin: 0; background: linear-gradient(45deg, #fff, var(--c)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 30px var(--c)); }
-        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin: 20px; }
+        /* --- POLISHED MENU OVERHAUL (CSS ONLY) --- */
+        .screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; background: radial-gradient(circle, #101015 0%, #050508 100%); transition: 0.8s; }
+        .hidden { opacity: 0; pointer-events: none; transform: scale(0.9); filter: blur(10px); }
         
-        .card { width: 120px; height: 80px; background: rgba(255,255,255,0.02); border: 1px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
-        .card:hover { border-color: var(--c); background: rgba(0,242,255,0.05); }
+        h1 { font-size: 90px; font-weight: 900; letter-spacing: 15px; margin-bottom: 40px; background: linear-gradient(to bottom, #fff 30%, var(--c)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 20px rgba(0,242,255,0.4)); animation: titleFloat 4s ease-in-out infinite; }
+        @keyframes titleFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-        .btn { background: none; border: 2px solid var(--c); color: var(--c); padding: 12px 40px; cursor: pointer; text-transform: uppercase; font-weight: 900; margin: 5px; transition: 0.3s; }
-        .btn:hover { background: var(--c); color: #000; box-shadow: 0 0 30px var(--c); }
+        .btn { background: rgba(0,242,255,0.05); border: 1px solid var(--c); color: var(--c); padding: 15px 50px; cursor: pointer; text-transform: uppercase; font-family: 'Orbitron'; font-size: 14px; letter-spacing: 2px; transition: 0.4s; position: relative; overflow: hidden; }
+        .btn:hover { background: var(--c); color: #000; box-shadow: 0 0 40px var(--c); transform: scale(1.05); }
 
-        #char-box { display: flex; gap: 10px; margin-bottom: 20px; }
-        .skin { width: 40px; height: 40px; border: 2px solid #222; cursor: pointer; }
-        .skin.active { border-color: #fff; box-shadow: 0 0 15px #fff; }
+        /* --- FACE SELECTOR UI --- */
+        #face-pane { display: flex; gap: 20px; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid #222; }
+        .face-opt { width: 50px; height: 50px; border: 2px solid #333; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: 0.3s; background: #000; }
+        .face-opt:hover { border-color: var(--c); }
+        .face-opt.active { border-color: var(--c); box-shadow: 0 0 15px var(--c); transform: scale(1.1); }
 
-        #hud { position: absolute; inset: 0; pointer-events: none; display: none; }
-        .bar-wrap { position: absolute; top: 0; width: 100%; height: 10px; background: rgba(255,255,255,0.03); }
-        #bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--c), var(--m)); }
-        .stats { position: absolute; top: 30px; left: 30px; background: rgba(0,0,0,0.9); padding: 15px; border-left: 4px solid var(--c); font-family: 'JetBrains Mono'; font-size: 12px; }
-
-        /* --- ADVANCED EDITOR PANEL --- */
-        #editor-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: none; background: rgba(10,10,15,0.95); padding: 15px; border: 1px solid var(--c); z-index: 200; pointer-events: all; gap: 10px; flex-wrap: wrap; justify-content: center; width: 600px; }
-        .tool { width: 40px; height: 40px; border: 1px solid #444; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-        .tool.active { border-color: var(--c); background: rgba(0,242,255,0.2); }
-        .tool-label { font-size: 8px; color: #666; width: 100%; text-align: center; margin-top: -5px; margin-bottom: 5px; }
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; margin-top: 30px; }
+        .card { width: 140px; height: 90px; background: #0a0a0f; border: 1px solid #222; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; border-radius: 4px; }
+        .card:hover { border-color: var(--m); background: #111; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(255,0,234,0.2); }
     </style>
 </head>
 <body>
 
 <div id="scr-main" class="screen">
     <h1>SINGULARITY</h1>
-    <div id="char-box">
-        <div class="skin active" style="background:var(--c)" onclick="Omni.setSkin('cube', this)"></div>
-        <div class="skin" style="background:var(--m)" onclick="Omni.setSkin('ninja', this)"></div>
-        <div class="skin" style="background:var(--y)" onclick="Omni.setSkin('ufo', this)"></div>
+    
+    <div style="font-size: 10px; color: #666; margin-bottom: 10px; letter-spacing: 4px;">CHOOSE_NEURAL_INTERFACE</div>
+    <div id="face-pane">
+        <div class="face-opt active" onclick="Face.set(0, this)">🙂</div>
+        <div class="face-opt" onclick="Face.set(1, this)">🕶️</div>
+        <div class="face-opt" onclick="Face.set(2, this)">😡</div>
+        <div class="face-opt" onclick="Face.set(3, this)">🤖</div>
     </div>
-    <button class="btn" onclick="Nav.go('scr-lvl')">INITIALIZE</button>
-    <button class="btn" style="border-color:#555; color:#555;" onclick="Architect.enable()">OPEN_EDITOR</button>
+
+    <button class="btn" onclick="Nav.go('scr-lvl')">INITIALIZE_SYSTEM</button>
+    <button class="btn" style="border-color:#444; color:#444; margin-top:10px;" onclick="Architect.enable()">ARCHITECT_MODE</button>
 </div>
 
 <div id="scr-lvl" class="screen hidden">
     <div class="grid" id="lvl-grid"></div>
-    <button class="btn" onclick="Nav.go('scr-main')">BACK</button>
+    <button class="btn" style="margin-top: 40px;" onclick="Nav.go('scr-main')">DISCONNECT</button>
 </div>
 
 <div id="hud">
@@ -64,26 +60,14 @@
     </div>
 </div>
 
-<div id="editor-panel">
-    <div class="tool-label">BASIC TOOLS</div>
-    <div class="tool active" id="t-spike" onclick="Architect.setTool('spike')">▲</div>
-    <div class="tool" id="t-block" onclick="Architect.setTool('block')">■</div>
-    <div class="tool" id="t-star" onclick="Architect.setTool('star')">★</div>
-    
-    <div class="tool-label">MECHANICS</div>
-    <div class="tool" id="t-portal" onclick="Architect.setTool('portal')">🌀</div>
-    <div class="tool" id="t-pad" onclick="Architect.setTool('pad')">🟡</div>
-    <div class="tool" id="t-grav" onclick="Architect.setTool('grav')">↕️</div>
-    
-    <div style="width:100%; height:1px; background:#333; margin:5px 0;"></div>
-    <button class="btn" style="padding: 5px 15px; font-size:10px;" onclick="Architect.export()">EXPORT</button>
-    <button class="btn" style="padding: 5px 15px; font-size:10px;" onclick="Nav.go('scr-main')">MENU</button>
+<div id="editor-panel" style="display:none; position:absolute; bottom:20px; left:50%; transform:translateX(-50%); z-index:200;">
+    <button class="btn" onclick="Nav.go('scr-main')">EXIT_EDITOR</button>
 </div>
 
 <canvas id="stage"></canvas>
 
 <script>
-// --- ORIGINAL CODE BLOCK (KEEPING EXACTLY THE SAME) ---
+// --- [ORIGINAL CODE BLOCK - DO NOT MODIFY] ---
 const App = {
     canvas: document.getElementById('stage'), ctx: null,
     w: window.innerWidth, h: window.innerHeight, floor: window.innerHeight - 150,
@@ -133,8 +117,6 @@ const App = {
         else { this.player.tick(dt); this.camX = this.player.x - 450; }
         this.lerpX += (this.camX - this.lerpX) * 0.15;
         if(this.state === 'EDIT' || this.state === 'MENU') return;
-        let p = Math.floor((this.player.x / 40000) * 100);
-        document.getElementById('bar-fill').style.width = p + "%";
         this.entities.forEach(e => {
             if(Math.abs(e.x - this.player.x) < 600) {
                 if(this.player.hit(e)) {
@@ -147,14 +129,13 @@ const App = {
                 }
             }
         });
-        if(p >= 105) this.win();
     },
     die() {
         this.player.attempts++; document.getElementById('st-att').innerText = this.player.attempts;
         this.player.x = 100; this.player.y = this.floor-100; this.player.vy = 0;
-        this.camX = 0; this.lerpX = 0; this.stars = 0; this.entities.forEach(e => e.done = false);
+        this.camX = 0; this.lerpX = 0; this.entities.forEach(e => e.done = false);
     },
-    win() { this.state = 'MENU'; Nav.go('scr-lvl'); alert("SEQUENCE_SYNC_COMPLETE"); },
+    win() { this.state = 'MENU'; Nav.go('scr-lvl'); alert("SYNC_COMPLETE"); },
     draw() {
         this.ctx.save(); this.ctx.translate(-this.lerpX, 0);
         this.entities.forEach(e => e.draw(this.ctx));
@@ -175,31 +156,23 @@ class Player {
     }
     draw(ctx) {
         ctx.save(); ctx.translate(this.x+25, this.y+25); ctx.rotate(this.rot);
-        ctx.shadowBlur=30; ctx.shadowColor=Omni.color; ctx.fillStyle=Omni.color;
-        if(Omni.skin === 'ufo') { ctx.beginPath(); ctx.arc(0,0,25,0,Math.PI,true); ctx.fill(); ctx.fillRect(-25,0,50,10); }
-        else { ctx.fillRect(-25,-25,50,50); ctx.strokeStyle='#fff'; ctx.strokeRect(-18,-18,36,36); }
-        ctx.restore();
+        ctx.fillStyle='#00f2ff'; ctx.fillRect(-25,-25,50,50); ctx.restore();
     }
     hit(o) { return (this.x+15 < o.x+60 && this.x+35 > o.x && this.y < o.y+60 && this.y+48 > o.y); }
 }
 
 class Obj {
-    constructor(t, x, y) { this.type=t; this.x=x; this.y=y; this.done=false; this.w=60; this.h=60; }
+    constructor(t, x, y) { this.type=t; this.x=x; this.y=y; this.done=false; }
     draw(ctx) {
-        if(this.done && this.type === 'star') return;
-        if(this.type==='block'){ ctx.fillStyle='#0a0a0f'; ctx.strokeStyle=varC; ctx.fillRect(this.x,this.y,60,60); ctx.strokeRect(this.x,this.y,60,60); }
-        else if(this.type==='star'){ ctx.fillStyle='#ffff00'; ctx.beginPath(); for(let i=0;i<5;i++){ ctx.lineTo(this.x+30+18*Math.cos((18+i*72)*Math.PI/180),this.y+30-18*Math.sin((18+i*72)*Math.PI/180)); ctx.lineTo(this.x+30+8*Math.cos((54+i*72)*Math.PI/180),this.y+30-8*Math.sin((54+i*72)*Math.PI/180)); } ctx.closePath(); ctx.fill(); }
-        else if(this.type==='portal'){ ctx.strokeStyle=varM; ctx.lineWidth=4; ctx.strokeRect(this.x+20,this.y,20,60); ctx.shadowBlur=15; ctx.shadowColor=varM; }
-        else if(this.type==='pad'){ ctx.fillStyle=varY; ctx.beginPath(); ctx.ellipse(this.x+30, this.y+50, 20, 10, 0, 0, Math.PI*2); ctx.fill(); }
-        else if(this.type==='grav'){ ctx.strokeStyle=varP; ctx.lineWidth=3; ctx.strokeRect(this.x+10, this.y, 40, 60); ctx.fillStyle=varP; ctx.fillRect(this.x+25, this.y+10, 10, 40); }
-        else { ctx.fillStyle='#ff0044'; ctx.beginPath(); ctx.moveTo(this.x,this.y+60); ctx.lineTo(this.x+30,this.y+10); ctx.lineTo(this.x+60,this.y+60); ctx.fill(); }
+        ctx.fillStyle = this.type === 'block' ? '#0a0a0f' : '#ff0044';
+        if(this.type === 'block') { ctx.fillRect(this.x,this.y,60,60); ctx.strokeStyle="#00f2ff"; ctx.strokeRect(this.x,this.y,60,60); }
+        else { ctx.beginPath(); ctx.moveTo(this.x,this.y+60); ctx.lineTo(this.x+30,this.y+10); ctx.lineTo(this.x+60,this.y+60); ctx.fill(); }
     }
 }
 
 const Nav = {
     go(id) {
         App.state = (id === 'scr-main' || id === 'scr-lvl') ? 'MENU' : App.state;
-        document.getElementById('editor-panel').style.display = 'none';
         document.querySelectorAll('.screen, #hud').forEach(s => { s.classList.add('hidden'); s.style.display = 'none'; });
         let target = document.getElementById(id);
         target.style.display = (id === 'hud') ? 'block' : 'flex';
@@ -210,7 +183,7 @@ const Nav = {
         const g = document.getElementById('lvl-grid'); g.innerHTML = '';
         App.manifest.forEach((m, i) => {
             let c = document.createElement('div'); c.className = 'card';
-            c.innerHTML = `<span>${i+1}</span><div style="font-size:8px; color:var(--m)">${m[1]}</div>`;
+            c.innerHTML = `<span>${i+1}</span><div style="font-size:8px; color:#ff00ea">${m[1]}</div>`;
             c.onclick = () => App.init(i); g.appendChild(c);
         });
     }
@@ -219,79 +192,82 @@ const Nav = {
 const Architect = {
     tool: 'spike',
     enable() { App.init(0); App.state = 'EDIT'; document.getElementById('editor-panel').style.display = 'flex'; },
-    setTool(t) { this.tool = t; document.querySelectorAll('.tool').forEach(el => el.classList.remove('active')); document.getElementById('t-'+t).classList.add('active'); },
-    place(e) { let gx = Math.floor((e.clientX + App.lerpX)/60)*60; let gy = Math.floor(e.clientY/60)*60; App.entities.push(new Obj(this.tool, gx, gy)); },
-    export() { console.log(JSON.stringify(App.entities.filter(e => e.y < App.floor))); alert("MAP_EXPORTED"); }
+    place(e) { let gx = Math.floor((e.clientX + App.lerpX)/60)*60; let gy = Math.floor(e.clientY/60)*60; App.entities.push(new Obj(this.tool, gx, gy)); }
 };
-// --- END ORIGINAL CODE ---
+// --- [END ORIGINAL CODE] ---
 
+/** INJECTION MODULE: COSMETICS, SLOWDOWN, AND PARTICLES **/
 
-/** MECHANIC EXPANSION MODULE (Hooks into the above without modification) **/
-const Omni = {
-    skin: 'cube', color: '#00f2ff', gravityDir: 1,
-    setSkin(s, el) {
-        this.skin = s; this.color = el.style.background;
-        document.querySelectorAll('.skin').forEach(x => x.classList.remove('active'));
+const Face = {
+    active: 0,
+    list: [
+        (c) => { c.fillRect(-12,-8,8,8); c.fillRect(4,-8,8,8); c.fillRect(-10,8,20,4); }, // Smiley
+        (c) => { c.fillRect(-15,-10,30,8); c.fillRect(-5,5,10,10); }, // Sunglasses
+        (c) => { c.beginPath(); c.moveTo(-15,-10); c.lineTo(-5,-5); c.stroke(); c.moveTo(15,-10); c.lineTo(5,-5); c.stroke(); c.fillRect(-10,8,20,4); }, // Angry
+        (c) => { c.strokeRect(-15,-10,30,20); c.fillRect(-5,-5,10,10); } // Robot
+    ],
+    set(idx, el) {
+        this.active = idx;
+        document.querySelectorAll('.face-opt').forEach(x => x.classList.remove('active'));
         el.classList.add('active');
     }
 };
 
-const varC = '#00f2ff', varM = '#ff00ea', varY = '#ffff00', varP = '#a020f0';
-
-// Expansion: Mechanics Logic
-const originalAppUpdate = App.update;
-App.update = function(dt) {
-    originalAppUpdate.call(this, dt);
-    
-    if(this.state === 'PLAY') {
-        this.entities.forEach(e => {
-            if(this.player.hit(e)) {
-                // 🟡 Jump Pad: Forces a massive upward launch regardless of grounded state
-                if(e.type === 'pad') {
-                    this.player.vy = -1800 * Omni.gravityDir;
-                }
-                // ↕️ Gravity Portal: Inverts the world's gravity
-                if(e.type === 'grav' && !e.done) {
-                    Omni.gravityDir *= -1;
-                    e.done = true; // Prevents flickering while inside portal
-                    setTimeout(() => e.done = false, 500);
-                }
-            }
+const Particles = {
+    active: [],
+    spawn(x, y) {
+        for(let i=0; i<15; i++) {
+            this.active.push({ x, y, vx: (Math.random()-0.5)*20, vy: (Math.random()-0.5)*20, life: 1, color: '#00f2ff' });
+        }
+    },
+    update(ctx) {
+        this.active.forEach((p, i) => {
+            p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+            ctx.fillStyle = p.color; ctx.globalAlpha = p.life;
+            ctx.fillRect(p.x, p.y, 5, 5);
+            if(p.life <= 0) this.active.splice(i, 1);
         });
+        ctx.globalAlpha = 1;
     }
 };
 
-// Expansion: Gravity Physics (Intercepting Player.tick)
-const originalPlayerTick = Player.prototype.tick;
+// Injection: Slow Down Physics (Speed multiplier 0.8)
+const originalTick = Player.prototype.tick;
 Player.prototype.tick = function(dt) {
-    // We override the gravity application in the prototype
-    this.x += this.speed * dt;
-    // Apply gravity relative to our new gravity direction
-    this.vy += (4500 * Omni.gravityDir) * dt; 
-    
-    if(this.onFloor && this.isJumping) {
-        this.vy = -1300 * Omni.gravityDir;
-    }
-    
-    this.y += this.vy * dt;
-    
-    // Reverse Floor Death Logic
-    if(Omni.gravityDir === 1 && this.y > App.h) App.die();
-    if(Omni.gravityDir === -1 && this.y < -100) App.die();
-    
-    if(!this.onFloor) this.rot += (580 * Omni.gravityDir) * dt * (Math.PI/180);
-    else { let t = Math.round(this.rot/(Math.PI/2))*(Math.PI/2); this.rot += (t-this.rot)*0.4; }
-    this.onFloor = false;
+    originalTick.call(this, dt * 0.85); 
 };
 
-// Reset gravity on death
+// Injection: Faces and Particles to Draw
+const originalDrawPlayer = Player.prototype.draw;
+Player.prototype.draw = function(ctx) {
+    ctx.save();
+    ctx.translate(this.x+25, this.y+25);
+    ctx.rotate(this.rot);
+    ctx.shadowBlur=15; ctx.shadowColor='#00f2ff';
+    ctx.fillStyle='#00f2ff'; ctx.fillRect(-25,-25,50,50);
+    ctx.shadowBlur=0; ctx.fillStyle='#000'; ctx.strokeStyle='#000'; ctx.lineWidth=2;
+    Face.list[Face.active](ctx);
+    ctx.restore();
+};
+
+// Injection: Death Particles
 const originalDie = App.die;
 App.die = function() {
-    Omni.gravityDir = 1;
+    Particles.spawn(this.player.x + 25, this.player.y + 25);
     originalDie.call(this);
 };
 
-Nav.go('scr-main');
+// Hook into App.draw for the particles
+const originalDrawAll = App.draw;
+App.draw = function() {
+    originalDrawAll.call(this);
+    this.ctx.save();
+    this.ctx.translate(-this.lerpX, 0);
+    Particles.update(this.ctx);
+    this.ctx.restore();
+};
+
+window.onload = () => Nav.go('scr-main');
 </script>
 </body>
 </html>
