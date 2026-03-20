@@ -69,7 +69,7 @@
 <canvas id="stage"></canvas>
 
 <script>
-/** [ORIGINAL 300 LINES OF CODE] **/
+/** [START OF ORIGINAL 300+ LINES - UNTOUCHED] **/
 const App = {
     canvas: document.getElementById('stage'), ctx: null,
     w: window.innerWidth, h: window.innerHeight, floor: window.innerHeight - 150,
@@ -172,13 +172,13 @@ const Nav = {
 
 const Face = { active: 0, set(i, el) { this.active=i; document.querySelectorAll('.face-opt').forEach(f=>f.classList.remove('active')); el.classList.add('active'); } };
 const Mod = { toggle() { let p=document.getElementById('mod-panel'); p.style.display = p.style.display==='none'?'block':'none'; } };
+/** [END OF ORIGINAL 300+ LINES] **/
 
-/** [END OF ORIGINAL CODE] **/
+/** [GD MECHANICS & EDITOR INJECTION LAYER] **/
 
-/** WAVE & EDITOR ADD-ON LAYER **/
 const WaveMode = {
     active: false,
-    manifest: [["WAVE_1","EASY",600,1], ["ZIG_ZAG","NORMAL",700,1.2], ["GAP_DASH","HARD",800,1.5]],
+    manifest: [["WAVE_A","EASY",600,1], ["ZIG_ZAG","NORMAL",700,1.2], ["GAP_RUSH","HARD",800,1.5]],
     start(idx) { this.active=true; let old=App.manifest; App.manifest=this.manifest; App.init(idx); App.manifest=old; }
 };
 
@@ -188,28 +188,58 @@ const Architect = {
     place(e) { let x=Math.floor((e.clientX+App.lerpX)/60)*60, y=Math.floor(e.clientY/60)*60; App.entities.push(new Obj(this.tool, x, y)); }
 };
 
-// Physics/Graphics Override
-const _tick = Player.prototype.tick;
+// Physics Override for Wave and GD Elements
+const _origTick = Player.prototype.tick;
 Player.prototype.tick = function(dt) {
-    if(!WaveMode.active) return _tick.call(this, dt);
-    this.x += this.speed * dt; this.vy = this.isJumping ? -1100 : 1100;
-    this.y += this.vy * dt; this.rot = this.isJumping ? -0.7 : 0.7;
+    if(!WaveMode.active) return _origTick.call(this, dt);
+    this.x += this.speed * dt; 
+    this.vy = this.isJumping ? -1100 : 1100;
+    this.y += this.vy * dt; 
+    this.rot = this.isJumping ? -0.7 : 0.7;
     if(this.y > App.floor || this.y < 0) App.die();
 };
 
-const _draw = Player.prototype.draw;
-Player.prototype.draw = function(ctx) {
-    if(!WaveMode.active) return _draw.call(this, ctx);
-    ctx.save(); ctx.translate(this.x+25,this.y+25); ctx.rotate(this.rot);
-    ctx.fillStyle='var(--c)'; ctx.beginPath(); ctx.moveTo(25,0); ctx.lineTo(-20,-20); ctx.lineTo(-20,20); ctx.fill(); ctx.restore();
+// Drawing Override for GD Objects
+const _origDrawObj = Obj.prototype.draw;
+Obj.prototype.draw = function(ctx) {
+    if (['pad','portal','orb'].includes(this.type)) {
+        ctx.save();
+        if(this.type === 'pad') { ctx.fillStyle='#ffff00'; ctx.fillRect(this.x,this.y+45,60,15); }
+        else if(this.type === 'portal') { ctx.strokeStyle='#00ff00'; ctx.lineWidth=4; ctx.strokeRect(this.x+20,this.y-50,20,160); }
+        else if(this.type === 'orb') { ctx.beginPath(); ctx.arc(this.x+30,this.y+30,20,0,Math.PI*2); ctx.strokeStyle='#00ccff'; ctx.stroke(); }
+        ctx.restore();
+    } else { _origDrawObj.call(this, ctx); }
 };
 
-// Injected UI
+// Collision Logic for GD Elements
+const _origUpdate = App.update;
+App.update = function(dt) {
+    _origUpdate.call(this, dt);
+    if(this.state === 'PLAY') {
+        this.entities.forEach(e => {
+            if(Math.abs(e.x - this.player.x) < 60 && this.player.hit(e)) {
+                if(e.type === 'pad') { this.player.vy = -1800; }
+                if(e.type === 'orb' && this.player.isJumping) { this.player.vy = -1400; this.player.isJumping = false; }
+                if(e.type === 'portal' && !e.done) {
+                    this.player.y = (this.player.y < App.floor/2) ? App.floor-100 : 100;
+                    e.done = true; setTimeout(()=>e.done=false, 1000);
+                }
+            }
+        });
+    }
+    // Update progress bar
+    document.getElementById('bar-fill').style.width = Math.min((this.player.x/12000)*100, 100) + "%";
+};
+
+// UI and Tools
 document.body.insertAdjacentHTML('beforeend', `
     <div id="ed-bar" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:none;gap:10px;background:#000;padding:10px;border:1px solid var(--c);z-index:999;">
-        <button class="btn" onclick="Architect.tool='block'">BLOCK</button>
-        <button class="btn" style="border-color:var(--rd)" onclick="Architect.tool='spike'">SPIKE</button>
-        <button class="btn" onclick="location.reload()">EXIT</button>
+        <button class="btn" style="padding:5px" onclick="Architect.tool='block'">BLOCK</button>
+        <button class="btn" style="padding:5px;border-color:var(--rd)" onclick="Architect.tool='spike'">SPIKE</button>
+        <button class="btn" style="padding:5px;border-color:var(--y)" onclick="Architect.tool='pad'">PAD</button>
+        <button class="btn" style="padding:5px;border-color:#00ccff" onclick="Architect.tool='orb'">ORB</button>
+        <button class="btn" style="padding:5px;border-color:#00ff00" onclick="Architect.tool='portal'">PORTAL</button>
+        <button class="btn" style="padding:5px" onclick="location.reload()">EXIT</button>
     </div>
 `);
 
